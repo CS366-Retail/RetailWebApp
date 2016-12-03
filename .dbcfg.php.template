@@ -1,0 +1,18 @@
+<?php
+$server_hostname = "contoso.com";
+$server_port = 3306;
+$schema = "app_retail";
+$username = "";
+$password = "";
+
+function connect()
+{
+    global $server_hostname, $server_port, $schema, $username, $password;
+    return new mysqli(
+        $server_hostname,
+        $username,
+        $password,
+        $schema,
+        $server_port);
+}
+?>
