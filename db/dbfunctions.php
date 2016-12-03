@@ -1,5 +1,18 @@
 <?php
 
+include '.dbcfg.php';
+
+# $connection = connect();
+
+$TABLE_BuySomeGetSomeCoupons="BuySomeGetSomeCoupons";
+$TABLE_CouponApplicableItems="CouponApplicableItems";
+$TABLE_Coupons="Coupons";
+$TABLE_Employees="Employees";
+$TABLE_Inventory="Inventory";
+$TABLE_InventorySales="InventorySales";
+$TABLE_PercentDiscountCoupons="PercentDiscountCoupons";
+$TABLE_Sales="Sales";
+
 function createPercentCoupon($couponCode, $expiration, $maxQuantity, $percentDiscount, $inventoryItems)
     
 end
