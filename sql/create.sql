@@ -15,7 +15,7 @@ CREATE TABLE CouponApplicableItems (
 );
 CREATE TABLE Coupons (
     id INT NOT NULL AUTO_INCREMENT,
-    couponCode VARCHAR(10) NOT NULL,
+    couponCode VARCHAR(10) NOT NULL UNIQUE,
     expiration DATETIME NOT NULL,
     maxQuantity INT NOT NULL,
     isPercentDiscount BIT NOT NULL,
