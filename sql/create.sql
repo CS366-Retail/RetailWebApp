@@ -48,7 +48,8 @@ CREATE TABLE RWA_Sales (
     employeeId INT NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (employeeId) REFERENCES RWA_Employees(id)
-);CREATE TABLE RWA_InventorySales (
+);
+CREATE TABLE RWA_InventorySales (
     quantity INT NOT NULL,
     price FLOAT NOT NULL,
     inventoryUPC INT NOT NULL,
