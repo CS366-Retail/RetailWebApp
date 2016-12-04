@@ -4,14 +4,14 @@ include '.dbcfg.php';
 
 # $connection = connect();
 
-$TABLE_BuySomeGetSomeCoupons="BuySomeGetSomeCoupons";
-$TABLE_CouponApplicableItems="CouponApplicableItems";
-$TABLE_Coupons="Coupons";
-$TABLE_Employees="Employees";
-$TABLE_Inventory="Inventory";
-$TABLE_InventorySales="InventorySales";
-$TABLE_PercentDiscountCoupons="PercentDiscountCoupons";
-$TABLE_Sales="Sales";
+$TABLE_BuySomeGetSomeCoupons="RWA_BuySomeGetSomeCoupons";
+$TABLE_CouponApplicableItems="RWA_CouponApplicableItems";
+$TABLE_Coupons="RWA_Coupons";
+$TABLE_Employees="RWA_Employees";
+$TABLE_Inventory="RWA_Inventory";
+$TABLE_InventorySales="RWA_InventorySales";
+$TABLE_PercentDiscountCoupons="RWA_PercentDiscountCoupons";
+$TABLE_Sales="RWA_Sales";
 
 function createPercentCoupon($couponCode, $expiration, $maxQuantity, $percentDiscount, $inventoryItems)
 {
@@ -50,7 +50,7 @@ function addInventoryQuantity($UPC, $quantity)
 	$connection = connect();
 	
 	$stmt = $connection->prepare("UPDATE $TABLE_Inventory SET quantity=? WHERE UPC=?");
-	$stmt->bind_param('ii', $quant, $upc);
+	$stmt->bind_param("ii", $quant, $upc);
 	$quant = $quantity;
 	$upc = $UPC;
 	$stmt->execute();
@@ -63,7 +63,7 @@ function setInventoryPrice($UPC, $price)
 	$connection = connect();
 	
 	$stmt = $connection->prepare("UPDATE $TABLE_Inventory SET price=? WHERE UPC=?");
-	$stmt->bind_param('di', $cost, $upc);
+	$stmt->bind_param("di", $cost, $upc);
 	$cost = $price;
 	$upc = $UPC;
 	$stmt->execute();
@@ -75,17 +75,18 @@ function createEmployee($firstName, $lastName, $username, $password, $pin)
 	global $TABLE_Employees;
 	
 	$connection = connect();
-	$stmt = $connection->prepare("INSERT INTO $TABLE_Employees (firstName, lastName, username, passHash, pinHash, salt)
-	VALUES (?, ?, ?, unhex(?), unhex(?), unhex(?)");
-	$stmt->bind_param('ssssss', $first, $last, $user, $pass, $pinNo, $salt);
+	$stmt = $connection->prepare("INSERT INTO $TABLE_Employees (firstName, lastName, username, passHash, pinHash, salt) 
+	VALUES (?, ?, ?, ?, ?, ?)");
+	$stmt->bind_param("ssssss", $first, $last, $user, $pass, $pinNo, $salt);
 	$first = $firstName;
 	$last = $lastName;
-	$user = $userName;
+	$user = $username;
 	$salt = bin2hex(random_bytes(32));
-	$password = $salt + $password;
-	$pass = hash("sha256", $password);
-	$pin = $salt + $pin;
-	$pinNo = hash("sha256", $pin);
+	$password = $salt . $password;
+	$pass = hex2bin(hash("sha256", $password));
+	$pin = $salt . $pin;
+	$pinNo = hex2bin(hash("sha256", $pin));
+  $salt = hex2bin($salt);
 	$stmt->execute();
 }
 function validateEmployeePassword($username, $password)
