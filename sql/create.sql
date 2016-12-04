@@ -4,14 +4,14 @@ CREATE TABLE BuySomeGetSomeCoupons (
     getQuantity INT NOT NULL,
     pricePercentOfGetItems INT NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY id REFERENCES (Coupons)id
+    FOREIGN KEY (id) REFERENCES Coupons(id)
 );
 CREATE TABLE CouponApplicableItems (
     couponId INT NOT NULL,
     inventoryUPC INT NOT NULL,
     PRIMARY KEY (couponId, inventoryUPC),
-    FOREIGN KEY couponId REFERENCES (Coupons)id,
-    FOREIGN KEY inventoryUPC REFERENCES (Inventory)UPC
+    FOREIGN KEY (couponId) REFERENCES Coupons(id),
+    FOREIGN KEY (inventoryUPC) REFERENCES Inventory(UPC)
 );
 CREATE TABLE Coupons (
     id INT NOT NULL AUTO_INCREMENT,
@@ -39,16 +39,16 @@ CREATE TABLE InventorySales (
     inventoryUPC INT NOT NULL,
     saleId INT NOT NULL,
     couponId INT,
-    FOREIGN KEY inventoryUPC REFERENCES (Inventory)UPC,
-    FOREIGN KEY saleId REFERENCES (Sales)id,
-    FOREIGN KEY couponId REFERENCES (Coupons)id,
+    FOREIGN KEY (inventoryUPC) REFERENCES Inventory(UPC),
+    FOREIGN KEY (saleId) REFERENCES Sales(id),
+    FOREIGN KEY (couponId) REFERENCES Coupons(id),
     PRIMARY KEY (inventoryUPC, saleId)
 );
 CREATE TABLE PercentDiscountCoupons (
     id INT NOT NULL,
     percentDiscount INT NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY id REFERENCES (Coupons)id
+    FOREIGN KEY (id) REFERENCES Coupons(id)
 );
 CREATE TABLE Sales (
     id INT NOT NULL AUTO_INCREMENT,
@@ -58,5 +58,5 @@ CREATE TABLE Sales (
     emailAddressCustomer VARCHAR(64),
     totalPrice FLOAT NOT NULL,
     employeeId INT NOT NULL,
-    FOREIGN KEY employeeId REFERENCES (Employees)id
+    FOREIGN KEY (employeeId) REFERENCES Employees(id)
 );
