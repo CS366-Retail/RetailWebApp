@@ -18,7 +18,7 @@ CREATE TABLE RWA_Employees (
 );
 CREATE TABLE RWA_Inventory (
     UPC INT NOT NULL AUTO_INCREMENT,
-    name VARCHAR(128) NOT NULL,
+    itemName VARCHAR(128) NOT NULL,
     price FLOAT NOT NULL,
     quantity INT NOT NULL,
     PRIMARY KEY (UPC)
