@@ -11,9 +11,9 @@ CREATE TABLE RWA_Employees (
     firstName VARCHAR(32) NOT NULL,
     lastName VARCHAR(32) NOT NULL,
     username VARCHAR(32) NOT NULL,
-    passHash BINARY(128) NOT NULL,
-    pinHash BINARY(128) NOT NULL,
-    salt BINARY(128) NOT NULL,
+    passHash BLOB(256) NOT NULL,
+    pinHash BLOB(256) NOT NULL,
+    salt BLOB(256) NOT NULL,
     PRIMARY KEY (id)
 );
 CREATE TABLE RWA_Inventory (
