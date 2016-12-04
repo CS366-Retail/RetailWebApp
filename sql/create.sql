@@ -1,19 +1,4 @@
-CREATE TABLE BuySomeGetSomeCoupons (
-    id INT NOT NULL,
-    qualifyingQuantity INT NOT NULL,
-    getQuantity INT NOT NULL,
-    pricePercentOfGetItems INT NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY id REFERENCES (Coupons)id
-);
-CREATE TABLE CouponApplicableItems (
-    couponId INT NOT NULL,
-    inventoryUPC INT NOT NULL,
-    PRIMARY KEY (couponId, inventoryUPC),
-    FOREIGN KEY couponId REFERENCES (Coupons)id,
-    FOREIGN KEY inventoryUPC REFERENCES (Inventory)UPC
-);
-CREATE TABLE Coupons (
+CREATE TABLE RWA_Coupons (
     id INT NOT NULL AUTO_INCREMENT,
     couponCode VARCHAR(10) NOT NULL UNIQUE,
     expiration DATETIME NOT NULL,
@@ -21,36 +6,39 @@ CREATE TABLE Coupons (
     isPercentDiscount BIT NOT NULL,
     PRIMARY KEY (id)
 );
-CREATE TABLE Employees (
+CREATE TABLE RWA_Employees (
     id INT NOT NULL AUTO_INCREMENT,
     firstName VARCHAR(32) NOT NULL,
     lastName VARCHAR(32) NOT NULL,
     username VARCHAR(32) NOT NULL,
     passHash BINARY(128) NOT NULL,
     pinHash BINARY(128) NOT NULL,
-    salt BINARY(128) NOT NULL
+    salt BINARY(128) NOT NULL,
+    PRIMARY KEY (id)
 );
-CREATE TABLE Inventory (
+CREATE TABLE RWA_Inventory (
     UPC INT NOT NULL AUTO_INCREMENT,
-);
-CREATE TABLE InventorySales (
-    quantity INT NOT NULL,
+    name VARCHAR(128) NOT NULL,
     price FLOAT NOT NULL,
-    inventoryUPC INT NOT NULL,
-    saleId INT NOT NULL,
-    couponId INT,
-    FOREIGN KEY inventoryUPC REFERENCES (Inventory)UPC,
-    FOREIGN KEY saleId REFERENCES (Sales)id,
-    FOREIGN KEY couponId REFERENCES (Coupons)id,
-    PRIMARY KEY (inventoryUPC, saleId)
+    quantity INT NOT NULL,
+    PRIMARY KEY (UPC)
 );
-CREATE TABLE PercentDiscountCoupons (
+CREATE TABLE RWA_BuySomeGetSomeCoupons (
     id INT NOT NULL,
-    percentDiscount INT NOT NULL,
+    qualifyingQuantity INT NOT NULL,
+    getQuantity INT NOT NULL,
+    pricePercentOfGetItems INT NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY id REFERENCES (Coupons)id
+    FOREIGN KEY (id) REFERENCES RWA_Coupons(id)
 );
-CREATE TABLE Sales (
+CREATE TABLE RWA_CouponApplicableItems (
+    couponId INT NOT NULL,
+    inventoryUPC INT NOT NULL,
+    PRIMARY KEY (couponId, inventoryUPC),
+    FOREIGN KEY (couponId) REFERENCES RWA_Coupons(id),
+    FOREIGN KEY (inventoryUPC) REFERENCES RWA_Inventory(UPC)
+);
+CREATE TABLE RWA_Sales (
     id INT NOT NULL AUTO_INCREMENT,
     firstNameCustomer VARCHAR(32),
     lastNameCustomer VARCHAR(32),
@@ -58,5 +46,22 @@ CREATE TABLE Sales (
     emailAddressCustomer VARCHAR(64),
     totalPrice FLOAT NOT NULL,
     employeeId INT NOT NULL,
-    FOREIGN KEY employeeId REFERENCES (Employees)id
+    PRIMARY KEY (id),
+    FOREIGN KEY (employeeId) REFERENCES RWA_Employees(id)
+);CREATE TABLE RWA_InventorySales (
+    quantity INT NOT NULL,
+    price FLOAT NOT NULL,
+    inventoryUPC INT NOT NULL,
+    saleId INT NOT NULL,
+    couponId INT,
+    PRIMARY KEY (inventoryUPC, saleId),
+    FOREIGN KEY (inventoryUPC) REFERENCES RWA_Inventory(UPC),
+    FOREIGN KEY (saleId) REFERENCES RWA_Sales(id),
+    FOREIGN KEY (couponId) REFERENCES RWA_Coupons(id)
+);
+CREATE TABLE RWA_PercentDiscountCoupons (
+    id INT NOT NULL,
+    percentDiscount INT NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (id) REFERENCES RWA_Coupons(id)
 );
