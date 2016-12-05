@@ -111,7 +111,15 @@ function setInventoryPrice($UPC, $price)
 	$stmt->bind_param("di", $price, $UPC);
 	$stmt->execute();
 }
-function createSale($firstNameCustomer, $lastNameCustomer, $phoneNumberCustomer, $emailAddressCustomer, $employeeId, $inventoryItems, $quantities)
+
+//$firstNameCustomer is the first name of the customer who made the purchase
+//$lastNameCustomer is the last name of the customer who made the purchase
+//$emailAddressCustomer is the e-mail address of the customer who made the purchase
+//$employeeId is the id of the employee who made the sale
+//$inventoryItems is an int array where each index holds the UPC of the item purchased
+//$quantities is an int array where the index contains the amount of the item purchased at the same index in $inventoryItems
+//$coupons is an int array where the index contains the couponCode for the item purchased at the same index in $inventoryItems
+function createSale($firstNameCustomer, $lastNameCustomer, $phoneNumberCustomer, $emailAddressCustomer, $employeeId, $inventoryItems, $quantities, $coupons)
 {
 	global $TABLE_Sales;
 	global $TABLE_Inventory;
@@ -122,23 +130,58 @@ function createSale($firstNameCustomer, $lastNameCustomer, $phoneNumberCustomer,
 	VALUES (?, ?, ?, ?, ?, ?)");
 	$stmt1->bind_param("ssssdi", $firstNameCustomer, $lastNameCustomer, $phoneNumberCustomer, $emailAddressCustomer, $totalPrice, $employeeId);
 	$totalPrice = 0.0;
-	for ($i = 0; $i < count($inventoryItems); $i++)
+	$stmt1->execute();
+	$insertedId = $this->mysqli->insert_id;
+	$inventorySalesStmt = $connection->prepare("INSERT INTO $TABLE_InventorySales (quantity, price, inventoryUPC, saleId, couponId)
+	VALUES (?, ?, ?, ?, ?");
+	$inventorySaleStmt->bind_param("idiii", $purchaseQuantity, $itemPrice, $upc, $saleId, $couponId);
+	$saleId = $insertedId;
+	if(count($coupons==0)
 	{
-		$upc = $inventoryItems[$i];
-		$sql = "SELECT price FROM $TABLE_Inventory WHERE UPC=$upc";
-		$price = $connection->query($sql);
-		$price = $price * $quantities[$i]; 
-		$totalPrice = $totalPrice + $price;
-		$stmt2 = $connection->prepare("UPDATE $TABLE_Inventory SET quantity=? WHERE UPC=$upc");
-		$stmt2->bind_param("i", $quantity);
-		$sql = "SELECT quantity FROM $TABLE_Inventory WHERE UPC=$upc";
-		$quantity = $connection->query($sql);
-		$quantity = $quantity - $quantities[$i];
-		$stmt2->execute();
+		for ($i = 0; $i < count($inventoryItems); $i++)
+		{
+			$upc = $inventoryItems[$i];
+			$purchaseQuantity = $quantities[$i];
+			$sql = "SELECT price FROM $TABLE_Inventory WHERE UPC=$upc";
+			$itemPrice = $connection->query($sql);
+			$price = $itemPrice * $purchaseQuantity; 
+			$totalPrice = $totalPrice + $price;
+			$stmt2 = $connection->prepare("UPDATE $TABLE_Inventory SET quantity=? WHERE UPC=$upc");
+			$stmt2->bind_param("i", $inventoryQuantity);
+			$sql = "SELECT quantity FROM $TABLE_Inventory WHERE UPC=$upc";
+			$inventoryQuantity = $connection->query($sql);
+			$inventoryQuantity = $inventoryQuantity- $purchaseQuantity;
+			$stmt2->execute();
+			$couponId = "NULL";
+			$inventorySaleStmt->execute();
+		}
+		
 	}
-	$stmt2->execute();
+	else
+	{
+		for ($i = 0; $i < count($inventoryItems); $i++)
+		{
+			$upc = $inventoryItems[$i];
+			$sql = "SELECT price FROM $TABLE_Inventory WHERE UPC=$upc";
+			$price = $connection->query($sql);
+			$price = $price * $quantities[$i]; 
+			$totalPrice = $totalPrice + $price;
+			$stmt4 = $connection->prepare("UPDATE $TABLE_Inventory SET quantity=? WHERE UPC=$upc");
+			$stmt4->bind_param("i", $quantity);
+			$sql = "SELECT quantity FROM $TABLE_Inventory WHERE UPC=$upc";
+			$quantity = $connection->query($sql);
+			$quantity = $quantity - $quantities[$i];
+			$stmt4->execute();
+		}
+	}
 	
 }
+
+//$firstName is the employee's first name
+//$lastName is the employee's last name
+//$username is the employee's chosen/assigned username
+//$password is the employee's chosen/assigned password
+//$pin is the employee's chosen/assigned pin
 function createEmployee($firstName, $lastName, $username, $password, $pin)
 {
 	global $TABLE_Employees;
@@ -158,6 +201,9 @@ function createEmployee($firstName, $lastName, $username, $password, $pin)
     $salt = hex2bin($salt);
 	$stmt->execute();
 }
+
+//$username is string value containing the employee's username
+//$pin is the string value containing the employee's pin
 function validateEmployeePassword($username, $password)
 {
 	global $TABLE_Employees;
@@ -165,12 +211,23 @@ function validateEmployeePassword($username, $password)
 	$connection = connect();
 	$sql = "SELECT salt FROM $TABLE_Employees WHERE username=$username";
 	$salt = $connection->query($sql);
-	$password = $salt . $password;
-	$password = hex2bin(hash("sha256", $password);
-	$sql = "SELECT passHash FROM $TABLE_Employees WHERE username=$username";
-	$hashedPass = $connection->query($sql);
-	return $hashedPass == $password;
+	if ($salt->num_rows == 0)
+	{
+		echo "Username $username not found";
+		return false;
+	}
+	else
+	{
+		$password = $salt . $password;
+		$password = hex2bin(hash("sha256", $password);
+		$sql = "SELECT passHash FROM $TABLE_Employees WHERE username=$username";
+		$hashedPass = $connection->query($sql);
+		return $hashedPass == $password;
+	}
 }
+
+//$username is a string value containing the employee's username
+//$pin is a string value containing the employee's pin
 function validateEmployeePin($username, $pin)
 {  
 	global $TABLE_Employees;
@@ -178,10 +235,32 @@ function validateEmployeePin($username, $pin)
 	$connection = connect();
 	$sql = "SELECT salt FROM $TABLE_Employees WHERE username=$username";
 	$salt = $connection->query($sql);
-	$pin = $salt . $pin;
-	$pin = hex2bin(hash("sha256", $pin);
-	$sql = "SELECT pinHash FROM $TABLE_Employees WHERE username=$username";
-	$hashedPin = $connection->query($sql);
-	return $hashedPin == $pin;
+	if ($salt->num_rows == 0)
+	{
+		echo "Username $username not found";
+		return false;
+	}
+	else
+	{
+		$pin = $salt . $pin;
+		$pin = hex2bin(hash("sha256", $pin);
+		$sql = "SELECT pinHash FROM $TABLE_Employees WHERE username=$username";
+		$hashedPin = $connection->query($sql);
+		return $hashedPin == $pin;
+	}
+}
+
+//$upc is the upc of the item you want the price and name of
+function getPriceAndName($upc)
+{
+	global $TABLE_Inventory;
+	
+	$connection = connect();
+	$sql = "SELECT price FROM $TABLE_Inventory WHERE UPC=$upc";
+	$price = $connection->query($sql);
+	$sql = "SELECT itemName FROM $TABLE_Inventory WHERE UPC=$upc";
+	$name = $connection->query($sql);
+	$priceAndName = array("price"=>$price, "name"=>$name);
+	return $priceAndName;
 }
 ?>
