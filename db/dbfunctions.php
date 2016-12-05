@@ -75,7 +75,7 @@ function isValid($couponCode)
 	$sql = "SELECT expiration FROM $TABLE_Coupons WHERE couponCode = $couponCode";
 	$expiration = $connection->query($sql);
 	$today = date("Y-m-d H:i:s");
-	return ($expiration < $today);
+	return $expiration < $today;
 	
 }
 function createInventoryItem($name, $price, $quantity)
@@ -159,7 +159,29 @@ function createEmployee($firstName, $lastName, $username, $password, $pin)
 	$stmt->execute();
 }
 function validateEmployeePassword($username, $password)
-{;}
+{
+	global $TABLE_Employees;
+	
+	$connection = connect();
+	$sql = "SELECT salt FROM $TABLE_Employees WHERE username=$username";
+	$salt = $connection->query($sql);
+	$password = $salt . $password;
+	$password = hex2bin(hash("sha256", $password);
+	$sql = "SELECT passHash FROM $TABLE_Employees WHERE username=$username";
+	$hashedPass = $connection->query($sql);
+	return $hashedPass == $password;
+}
 function validateEmployeePin($username, $pin)
-{ return true; }
+{  
+	global $TABLE_Employees;
+	
+	$connection = connect();
+	$sql = "SELECT salt FROM $TABLE_Employees WHERE username=$username";
+	$salt = $connection->query($sql);
+	$pin = $salt . $pin;
+	$pin = hex2bin(hash("sha256", $pin);
+	$sql = "SELECT pinHash FROM $TABLE_Employees WHERE username=$username";
+	$hashedPin = $connection->query($sql);
+	return $hashedPin == $pin;
+}
 ?>
