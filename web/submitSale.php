@@ -15,7 +15,7 @@ $firstNameCustomer = $_POST["firstNameCustomer"];
 $lastNameCustomer = $_POST["lastNameCustomer"];
 $phoneNumberCustomer = $_POST["phoneNumberCustomer"];
 $emailAddressCustomer = $_POST["emailAddressCustomer"];
-$employeeId = 1;
+$employeeName = auth_getUsername();
 $inventoryItems = $_POST["inventoryItems"];
 $quantities = $_POST["quantities"];
 $coupons = $_POST["coupons"];
@@ -24,7 +24,7 @@ $inventoryItems = explode(";", $inventoryItems);
 $quantities = explode(";", $quantities);
 $coupons = explode(";", $coupons);
 
-if (createSale($firstNameCustomer, $lastNameCustomer, $phoneNumberCustomer, $emailAddressCustomer, $employeeId, $inventoryItems, $quantities))
+if (createSale($firstNameCustomer, $lastNameCustomer, $phoneNumberCustomer, $emailAddressCustomer, $employeeName, $inventoryItems, $quantities))
 {
   http_response_code(201);
   echo "Sale successful";

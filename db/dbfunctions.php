@@ -220,10 +220,16 @@ function setInventoryPrice($UPC, $price)
 	}
 	return true;
 }*/
-function createSale($firstNameCustomer, $lastNameCustomer, $phoneNumberCustomer, $emailAddressCustomer, $employeeId, $inventoryItems, $quantities)
+function createSale($firstNameCustomer, $lastNameCustomer, $phoneNumberCustomer, $emailAddressCustomer, $employeeName, $inventoryItems, $quantities)
 {
-  global $TABLE_Sales, $TABLE_InventorySales, $TABLE_Inventory;
+  global $TABLE_Sales, $TABLE_InventorySales, $TABLE_Inventory, $TABLE_Employees;
   $connection = connect();
+  
+  $EmployeeLookupQuery = $connection->prepare("SELECT id FROM $TABLE_Employees WHERE username=?");
+  $EmployeeLookupQuery->bind_param("s", $employeeName);
+  $EmployeeLookupQuery->execute();
+  $EmployeeLookupResult = $EmployeeLookupQuery->get_result();
+  $employeeId = $EmployeeLookupResult->fetch_assoc()["id"];
   
   $CreateSaleQuery = $connection->prepare("INSERT INTO $TABLE_Sales (firstNameCustomer, lastNameCustomer, phoneNumberCustomer, emailAddressCustomer, totalPrice, employeeId)
   VALUES (?, ?, ?, ?, ?, ?)");

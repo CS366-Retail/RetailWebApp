@@ -1,5 +1,5 @@
 <?php
   include 'static.php';
-  logout();
-  header('Location: Login.php');
+  auth_logout();
+  header('Location: index.php');
 ?>

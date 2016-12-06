@@ -59,7 +59,7 @@ function auth_getAuthMode()
 function auth_getUsername()
 {
   global $KEYNAME_PIN, $KEYNAME_PAS;
-  $mode = getAuthMode();
+  $mode = auth_getAuthMode();
   if ($mode == "pin")
     return $_COOKIE[$KEYNAME_PIN];
   elseif ($mode == "pas")
