@@ -1,0 +1,30 @@
+
+
+
+div#manageInventory-addItem
+{
+  width: 100%;
+}
+div#manageInventory-addItem button
+{
+  width:80px;
+  float:left;
+}
+div#manageInventory-addItem input#manageInventory-addItem_Name
+{
+  width:auto;
+  overflow:hidden;
+}
+
+
+div#manageEmployees
+{
+  float:left;
+}
+div#manageEmployees-addEmployee
+{
+  float:right;
+}
+div.clear{
+  clear: both;
+}

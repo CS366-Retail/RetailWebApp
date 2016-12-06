@@ -1,0 +1,31 @@
+div.logincontainer form
+{
+  text-align: center;
+  font-size: 32px;
+}
+div.logincontainer form input
+{
+  width: 100%;
+  font-size: 32px;
+}
+div.logincontainer form table
+{
+  margin-left: auto; margin-right: auto;
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+table.pinPad button.pinNumber
+{
+  width: 80px;
+  height: 60px;
+}
+table.pinPad button.pinNumber0
+{
+  width: 80px;
+  height: 60px;
+}
+table.pinPad button.pinSubmit
+{
+  width: 160px;
+  height: 60px;
+}
