@@ -12,7 +12,7 @@ $TABLE_Inventory="RWA_Inventory";
 $TABLE_InventorySales="RWA_InventorySales";
 $TABLE_PercentDiscountCoupons="RWA_PercentDiscountCoupons";
 $TABLE_Sales="RWA_Sales";
-
+/*
 function createPercentCoupon($couponCode, $expiration, $maxQuantity, $percentDiscount, $inventoryItems)
 {
 	global $TABLE_CouponApplicableItems;
@@ -39,7 +39,7 @@ function createPercentCoupon($couponCode, $expiration, $maxQuantity, $percentDis
 	$id = $connection->query($sql);
 	$stmt3->execute();
 }
-
+*//*
 function createBSGSCoupon($couponCode, $expiration, $maxQuantity, $qualifyingQuantity, $getQuantity, $pricePercentOfGetItems, $inventoryItems)
 {
 	global $TABLE_CouponApplicableItems;
@@ -66,7 +66,7 @@ function createBSGSCoupon($couponCode, $expiration, $maxQuantity, $qualifyingQua
 	$id = $connection->query($sql);
 	$stmt3->execute();
 	
-}
+}*/
 function isValid($couponCode)
 {	
 	global $TABLE_Coupons;
@@ -78,7 +78,7 @@ function isValid($couponCode)
 	return $expiration < $today;
 	
 }
-function createInventoryItem($name, $price, $quantity)
+/*function createInventoryItem($name, $price, $quantity)
 {
 	global $TABLE_Inventory;
 	
@@ -87,33 +87,27 @@ function createInventoryItem($name, $price, $quantity)
 	VALUES (?, ?, ?)");
 	$stmt(bind_param("sdi", $name, $price, $quantity);
 	$stmt->execute();
-}
-function updateInventoryItem($UPC, $changeInQuantity, $name=NULL)
+}*/
+function updateInventoryItem($UPC, $changeInQuantity, $price, $name=NULL)
 {	
 	global $TABLE_Inventory;
 	
 	$connection = connect();
   
   $changeInQuantity = (int)$changeInQuantity;
-  
-  $currentQuantityQuery = $connection->prepare("SELECT quantity FROM $TABLE_Inventory WHERE UPC=?");
-  $currentQuantityQuery->bind_param("i", $UPC);
-  $currentQuantityQueryResult = $currentQuantityQuery->execute();
-  $currentQuantityAssoc = $result->fetch_assoc();
-  $currentQuantity = (int)$currentQuantityAssoc["quantity"];
 	
 	$updateInventoryItemQuery;
   if ($name == NULL)
   {
-    $updateInventoryItemQuery = $connection->prepare("UPDATE $TABLE_Inventory SET quantity=? WHERE UPC=?");
-    $updateInventoryItemQuery->bind_param("ii", $quantity + $changeInQuantity, $UPC);
+    $updateInventoryItemQuery = $connection->prepare("UPDATE $TABLE_Inventory SET quantity = quantity + ?, price=? WHERE UPC=?");
+    $updateInventoryItemQuery->bind_param("idi", $changeInQuantity, $price, $UPC);
   }
   else
   {
-    $updateInventoryItemQuery = $connection->prepare("UPDATE $TABLE_Inventory SET quantity=?, name=? WHERE UPC=?");
-    $updateInventoryItemQuery->bind_param("isi", $quantity + $changeInQuantity, $name, $UPC);
+    $updateInventoryItemQuery = $connection->prepare("UPDATE $TABLE_Inventory SET quantity = quantity + ?, price=?, name=? WHERE UPC=?");
+    $updateInventoryItemQuery->bind_param("idsi", $changeInQuantity, $price, $name, $UPC);
   }
-	$stmt->execute();
+	$updateInventoryItemQuery->execute();
 	
 }
 function setInventoryPrice($UPC, $price)
@@ -126,7 +120,7 @@ function setInventoryPrice($UPC, $price)
 	$stmt->bind_param("di", $price, $UPC);
 	$stmt->execute();
 }
-
+/*
 //$firstNameCustomer is the first name of the customer who made the purchase
 //$lastNameCustomer is the last name of the customer who made the purchase
 //$emailAddressCustomer is the e-mail address of the customer who made the purchase
@@ -190,7 +184,7 @@ function createSale($firstNameCustomer, $lastNameCustomer, $phoneNumberCustomer,
 		}
 	}
 	
-}
+}*/
 
 //$firstName is the employee's first name
 //$lastName is the employee's last name
@@ -216,7 +210,41 @@ function createEmployee($firstName, $lastName, $username, $password, $pin)
     $salt = hex2bin($salt);
 	$stmt->execute();
 }
-
+function getEmployees()
+{
+  global $TABLE_Employees;
+  
+  $result = array();
+  
+  $connection = connect();
+  $sql = "SELECT * FROM $TABLE_Employees";
+  $queryResult = $connection->query($sql);
+  while ($row = $queryResult->fetch_assoc())
+    array_push($result, $row);
+  
+  return $result;
+}
+function updateEmployee($id, $firstName, $lastName, $username, $pass = null, $pin = null)
+{	
+	global $TABLE_Employees;
+	
+	$connection = connect();
+  
+	$updateEmployeeQuery;
+  if ($pass == NULL || $pin == null)
+  {
+    $updateEmployeeQuery = $connection->prepare("UPDATE $TABLE_Employees SET firstName = ?, lastName = ?, username = ? WHERE id = ?");
+    $updateEmployeeQuery->bind_param("sssi", $firstName, $lastName, $username, $id);
+  }
+  else
+  {
+    // todo add support for pass/pin change
+    $updateEmployeeQuery = $connection->prepare("UPDATE $TABLE_Employees SET firstName = ?, lastName = ?, username = ? WHERE id = ?");
+    $updateEmployeeQuery->bind_param("sssi", $firstName, $lastName, $username, $id);
+  }
+	$updateEmployeeQuery->execute();
+}
+/*
 //$username is string value containing the employee's username
 //$pin is the string value containing the employee's pin
 function validateEmployeePassword($username, $password)
@@ -240,7 +268,7 @@ function validateEmployeePassword($username, $password)
 		return $hashedPass == $password;
 	}
 }
-
+*//*
 //$username is a string value containing the employee's username
 //$pin is a string value containing the employee's pin
 function validateEmployeePin($username, $pin)
@@ -263,7 +291,7 @@ function validateEmployeePin($username, $pin)
 		$hashedPin = $connection->query($sql);
 		return $hashedPin == $pin;
 	}
-}
+}*/
 
 //$upc is the upc of the item you want the price and name of
 function getPriceAndName($upc)
