@@ -5,7 +5,7 @@
   
   if (isset($_POST["username"]) && isset($_POST["pin"]))
   {
-    if (validateEmployeePassword($_POST["username"], $_POST["pin"]))
+    if (validateEmployeePin($_POST["username"], $_POST["pin"]))
     {
       auth_loginViaPin($_POST["username"]);
       header('Location: NewSale.php');
