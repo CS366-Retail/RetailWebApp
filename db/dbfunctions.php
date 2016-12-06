@@ -85,7 +85,7 @@ function createInventoryItem($name, $price, $quantity, $couponApplicable=NULL)
 	global $TABLE_CouponApplicableItems;
 	
 	$connection = connect();
-	$stmt1 = $connection->prepare("INSERT INTO $TABLE_Inventory (itemName, price, quantity)
+	$stmt1 = $connection->prepare("INSERT INTO $TABLE_Inventory ($TABLE_Inventory.name, price, quantity)
 	VALUES (?, ?, ?)");
 	$stmt1->bind_param("sdi", $name, $price, $quantity);
 	$stmt1->execute();
@@ -98,7 +98,7 @@ function createInventoryItem($name, $price, $quantity, $couponApplicable=NULL)
 		$stmt2->execute();
 	}*/
 }
-function updateInventoryItem($UPC, $changeInQuantity, $name=NULL)
+function updateInventoryItem($UPC, $changeInQuantity, $price, $name=NULL)
 {	
 	global $TABLE_Inventory;
 	
@@ -228,6 +228,7 @@ function createSale($firstNameCustomer, $lastNameCustomer, $phoneNumberCustomer,
   $CreateSaleQuery = $connection->prepare("INSERT INTO $TABLE_Sales (firstNameCustomer, lastNameCustomer, phoneNumberCustomer, emailAddressCustomer, totalPrice, employeeId)
   VALUES (?, ?, ?, ?, ?, ?)");
   $CreateSaleQuery->bind_param("ssssdi", $firstNameCustomer, $lastNameCustomer, $phoneNumberCustomer, $emailAddressCustomer, $totalPrice, $employeeId);
+  $totalPrice = 0;
   $totalPrice = 0;
   $CreateSaleQuery->execute();
   
@@ -407,4 +408,21 @@ function getInventory()
   
   return $result;
 }
+
+function getSales()
+{
+  global $TABLE_Sales, $TABLE_Employees;
+  
+  $result = array();
+  
+  $connection = connect();
+  $sql = "SELECT $TABLE_Sales.id, firstNameCustomer, lastNameCustomer, phoneNumberCustomer, emailAddressCustomer, totalPrice, username AS employeeUsername
+          FROM $TABLE_Sales
+          LEFT JOIN $TABLE_Employees
+          ON $TABLE_Sales.employeeId=$TABLE_Employees.id";
+  $queryResult = $connection->query($sql);
+  while ($row = $queryResult->fetch_assoc())
+    array_push($result, $row);
+  
+  return $result;}
 ?>

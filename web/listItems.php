@@ -13,10 +13,7 @@
 
 if (isset($_POST["upc"]) && !empty($_POST["upc"]))
 {
-  if (isset($_POST["name"]) && !empty($_POST["name"]))
-    updateInventoryItem($_POST["upc"], $_POST["changeInQuantity"], $_POST["price"], $_POST["name"]);
-  else
-    updateInventoryItem($_POST["upc"], $_POST["changeInQuantity"], $_POST["price"]);
+  updateInventoryItem($_POST["upc"], $_POST["changeInQuantity"], $_POST["price"], $_POST["name"]);
 }
 elseif (isset($_POST["name"]) && !empty($_POST["name"]))
 {

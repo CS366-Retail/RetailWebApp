@@ -169,25 +169,25 @@
       var sales = [];
       function recalculateSalesTable(){
         var div = document.getElementById("manageSales-table");
-        var content = "<tr><th>First Name</th><th>Last Name</th><th>Username</th><th>Save</th></tr>";
+        var content = "<tr><th>First Name</th><th>Last Name</th><th>Phone Number</th><th>Email</th><th>Total Price</th><th>Employee</th></tr>";
         
-        for (var key in employees)
-        { if (employees.hasOwnProperty(key)) {
+        for (var key in sales)
+        { if (sales.hasOwnProperty(key)) {
           content +=
             "<tr id='emp" + key + "'>" +
-              "<td><input id='sale" + key + "_firstNameCustomer' type='text' value='" + employees[key]["firstNameCustomer"] + "' /></td>" + 
-              "<td><input id='sale" + key + "_lastNameCustomer' type='text' value='" + employees[key]["lastNameCustomer"] + "' /></td>" + 
-              "<td><input id='sale" + key + "_phoneNumberCustomer' type='text' value='" + employees[key]["phoneNumberCustomer"] + "' /></td>" + 
-              "<td><input id='sale" + key + "_emailAddressCustomer' type='text' value='" + employees[key]["emailAddressCustomer"] + "' /></td>" + 
-              "<td><input id='sale" + key + "_totalPrice' type='text' value='" + parseFloat(employees[key]["totalPrice"]).toFixed(2) + "' /></td>" + 
-              "<td><input id='sale" + key + "_employeeUsername' type='text' value='" + employees[key]["employeeUsername"] + "' /></td>" + 
+              "<td><input id='sale" + key + "_firstNameCustomer' type='text' value='" + sales[key]["firstNameCustomer"] + "' /></td>" + 
+              "<td><input id='sale" + key + "_lastNameCustomer' type='text' value='" + sales[key]["lastNameCustomer"] + "' /></td>" + 
+              "<td><input id='sale" + key + "_phoneNumberCustomer' type='text' value='" + sales[key]["phoneNumberCustomer"] + "' /></td>" + 
+              "<td><input id='sale" + key + "_emailAddressCustomer' type='text' value='" + sales[key]["emailAddressCustomer"] + "' /></td>" + 
+              "<td><input id='sale" + key + "_totalPrice' type='text' value='" + parseFloat(sales[key]["totalPrice"]).toFixed(2) + "' /></td>" + 
+              "<td><input id='sale" + key + "_employeeUsername' type='text' value='" + sales[key]["employeeUsername"] + "' /></td>" + 
             "</tr>";
         } }
         
         div.innerHTML = content;
       }
       function populateSales(){
-        $.ajax("employees.php", {
+        $.ajax("sales.php", {
           type: "POST",
           statusCode: {
             200: function(data) {
@@ -195,10 +195,13 @@
               lines.forEach(function(line) {
                   var obj = line.split(";");
                   var id = obj[0];
-                  employees[id] = [];
-                  employees[id]["firstName"] = obj[1];
-                  employees[id]["lastName"] = obj[2];
-                  employees[id]["username"] = obj[3];
+                  sales[id] = [];
+                  sales[id]["firstNameCustomer"] = obj[1];
+                  sales[id]["lastNameCustomer"] = obj[2];
+                  sales[id]["phoneNumberCustomer"] = obj[3];
+                  sales[id]["emailAddressCustomer"] = obj[4];
+                  sales[id]["totalPrice"] = obj[5];
+                  sales[id]["employeeUsername"] = obj[6];
               });
               recalculateSalesTable();
             },
@@ -212,7 +215,7 @@
       
     </script>
   </head>
-  <body onload="populateInventory();populateEmployees()">
+  <body onload="populateInventory();populateEmployees();populateSales()">
     <div>
       <div id="tabs">
         <ul>
@@ -253,6 +256,7 @@
             <button onclick="addEmployee()">Create Employee</button>
           </div>
           <div class="clear"></div>
+        </div>
         <div id="tabs-manageSales">
           <table id="manageSales-table"></table>
         </div>
