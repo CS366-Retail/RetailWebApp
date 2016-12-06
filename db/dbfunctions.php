@@ -88,16 +88,31 @@ function createInventoryItem($name, $price, $quantity)
 	$stmt(bind_param("sdi", $name, $price, $quantity);
 	$stmt->execute();
 }
-function addInventoryQuantity($UPC, $quantity)
+function updateInventoryItem($UPC, $changeInQuantity, $name=NULL)
 {	
 	global $TABLE_Inventory;
 	
 	$connection = connect();
+  
+  $changeInQuantity = (int)$changeInQuantity;
+  
+  $currentQuantityQuery = $connection->prepare("SELECT quantity FROM $TABLE_Inventory WHERE UPC=?");
+  $currentQuantityQuery->bind_param("i", $UPC);
+  $currentQuantityQueryResult = $currentQuantityQuery->execute();
+  $currentQuantityAssoc = $result->fetch_assoc();
+  $currentQuantity = (int)$currentQuantityAssoc["quantity"];
 	
-	$stmt = $connection->prepare("UPDATE $TABLE_Inventory SET quantity=? WHERE UPC=?");
-	$stmt->bind_param("ii", $quantity, $UPC);
-	$sql = "SELECT quantity FROM $TABLE_Inventory WHERE UPC=$UPC";
-	$quantity = $connection->query($sql) + $quantity;
+	$updateInventoryItemQuery;
+  if ($name == NULL)
+  {
+    $updateInventoryItemQuery = $connection->prepare("UPDATE $TABLE_Inventory SET quantity=? WHERE UPC=?");
+    $updateInventoryItemQuery->bind_param("ii", $quantity + $changeInQuantity, $UPC);
+  }
+  else
+  {
+    $updateInventoryItemQuery = $connection->prepare("UPDATE $TABLE_Inventory SET quantity=?, name=? WHERE UPC=?");
+    $updateInventoryItemQuery->bind_param("isi", $quantity + $changeInQuantity, $name, $UPC);
+  }
 	$stmt->execute();
 	
 }
@@ -256,11 +271,29 @@ function getPriceAndName($upc)
 	global $TABLE_Inventory;
 	
 	$connection = connect();
-	$sql = "SELECT price FROM $TABLE_Inventory WHERE UPC=$upc";
-	$price = $connection->query($sql);
-	$sql = "SELECT itemName FROM $TABLE_Inventory WHERE UPC=$upc";
-	$name = $connection->query($sql);
-	$priceAndName = array("price"=>$price, "name"=>$name);
+	$sql = "SELECT price, name FROM $TABLE_Inventory WHERE UPC=$upc";
+	$result = $connection->query($sql);
+  $row = mysqli_fetch_assoc($result);
+  $price = $row["price"];
+  $name = $row["name"];
+  $priceAndName = array("price"=>$price, "name"=>$name);
 	return $priceAndName;
 }
+
+function getInventory()
+{
+  global $TABLE_Inventory;
+  
+  $result = array();
+  
+  $connection = connect();
+  $sql = "SELECT * FROM $TABLE_Inventory";
+  $queryResult = $connection->query($sql);
+  while ($row = $queryResult->fetch_assoc())
+    array_push($result, $row);
+  
+  return $result;
+}
+
+function validateEmployeePin($username, $pin) { return true; } function validateEmployeePassword($username, $password) { return true; }
 ?>
