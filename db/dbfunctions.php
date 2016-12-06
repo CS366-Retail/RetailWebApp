@@ -66,7 +66,7 @@ function createBSGSCoupon($couponCode, $expiration, $maxQuantity, $qualifyingQua
 	$id = $connection->query($sql);
 	$stmt3->execute();
 	
-}*/
+}*//*
 function isValid($couponCode)
 {	
 	global $TABLE_Coupons;
@@ -77,9 +77,9 @@ function isValid($couponCode)
 	$today = date("Y-m-d H:i:s");
 	return $expiration < $today;
 	
-}
+}*/
 
-function createInventoryItem($name, $price, $quantity, $couponApplicable)
+function createInventoryItem($name, $price, $quantity, $couponApplicable=NULL)
 {
 	global $TABLE_Inventory;
 	global $TABLE_CouponApplicableItems;
@@ -90,13 +90,13 @@ function createInventoryItem($name, $price, $quantity, $couponApplicable)
 	$stmt1->bind_param("sdi", $name, $price, $quantity);
 	$stmt1->execute();
 	$insertedUpc = $this->mysqli->insert_id;
-	if ($couponApplicable)
+	/*if ($couponApplicable!=NULL)
 	{
 		$stmt2 = $connection->("INSERT INTO $TABLE_CouponApplicableItems (couponId, inventoryUPC)
 		VALUES (?, ?)");
 		$stmt2->bind_param("ii", $couponId, $insertedUpc);
 		$stmt2->execute();
-	}
+	}*/
 }
 function updateInventoryItem($UPC, $changeInQuantity, $name=NULL)
 {	
@@ -130,7 +130,7 @@ function setInventoryPrice($UPC, $price)
 	$stmt->bind_param("di", $price, $UPC);
 	$stmt->execute();
 }
-/*
+
 //$firstNameCustomer is the first name of the customer who made the purchase
 //$lastNameCustomer is the last name of the customer who made the purchase
 //$emailAddressCustomer is the e-mail address of the customer who made the purchase
@@ -138,7 +138,7 @@ function setInventoryPrice($UPC, $price)
 //$inventoryItems is an int array where each index holds the UPC of the item purchased
 //$quantities is an int array where the index contains the amount of the item purchased at the same index in $inventoryItems
 //$coupons is an int array where the index contains the couponCode for the item purchased at the same index in $inventoryItems
-function createSale($firstNameCustomer, $lastNameCustomer, $phoneNumberCustomer, $emailAddressCustomer, $employeeId, $inventoryItems, $quantities)
+/*function createSale($firstNameCustomer, $lastNameCustomer, $phoneNumberCustomer, $emailAddressCustomer, $employeeId, $inventoryItems, $quantities)
 {
 	global $TABLE_Sales;
 	global $TABLE_Inventory;
@@ -146,38 +146,56 @@ function createSale($firstNameCustomer, $lastNameCustomer, $phoneNumberCustomer,
 	global $TABLE_PercentDiscountCoupons;
 	
 	$connection = connect();
-	$stmt1 = $connection->prepare("INSERT INTO $TABLE_Sales (firstNameCustomer, lastNameCustomer, phoneNumberCustomer, emailAddressCustomer, totalPrice, employeeId)
+  
+	$saleQuery = $connection->prepare("INSERT INTO $TABLE_Sales (firstNameCustomer, lastNameCustomer, phoneNumberCustomer, emailAddressCustomer, totalPrice, employeeId)
 	VALUES (?, ?, ?, ?, ?, ?)");
-	$stmt1->bind_param("ssssdi", $firstNameCustomer, $lastNameCustomer, $phoneNumberCustomer, $emailAddressCustomer, $totalPrice, $employeeId);
+	$saleQuery->bind_param("ssssdi", $firstNameCustomer, $lastNameCustomer, $phoneNumberCustomer, $emailAddressCustomer, $priceZero, $employeeId);
+  $priceZero = 0;
+	$saleQuery->execute();
+	$insertedId = $connection->insert_id;
+  
+	$inventorySalesStmt = $connection->prepare("INSERT INTO $TABLE_InventorySales (quantity, price, inventoryUPC, saleId)
+	VALUES (?, ?, ?, ?)");
+	$inventorySalesStmt->bind_param("idii", $purchaseQuantity, $itemPrice, $upc, $insertedId);
+  
 	$totalPrice = 0.0;
-	$stmt1->execute();
-	$insertedId = $this->mysqli->insert_id;
-	$inventorySalesStmt = $connection->prepare("INSERT INTO $TABLE_InventorySales (quantity, price, inventoryUPC, saleId, couponId)
-	VALUES (?, ?, ?, ?, ?");
-	$inventorySaleStmt->bind_param("idiii", $purchaseQuantity, $itemPrice, $upc, $saleId, $couponId);
-	$saleId = $insertedId;
 	//if (count($coupons==0))
 	//{
-		for ($i = 0; $i < count($inventoryItems); $i++)
-		{
-			$upc = $inventoryItems[$i];
-			$purchaseQuantity = $quantities[$i];
-			$sql = "SELECT price FROM $TABLE_Inventory WHERE UPC=$upc";
-			$itemPrice = $connection->query($sql);
-			$price = $itemPrice * $purchaseQuantity; 
-			$totalPrice = $totalPrice + $price;
-			$stmt2 = $connection->prepare("UPDATE $TABLE_Inventory SET quantity=? WHERE UPC=$upc");
-			$stmt2->bind_param("i", $inventoryQuantity);
-			$sql = "SELECT quantity FROM $TABLE_Inventory WHERE UPC=$upc";
-			$inventoryQuantity = $connection->query($sql);
-			$inventoryQuantity = $inventoryQuantity- $purchaseQuantity;
-			$stmt2->execute();
-			$couponId = "NULL";
-			$inventorySaleStmt->execute();
-		}
-		
+    
+  $priceQuery = $connection->prepare("SELECT price FROM $TABLE_Inventory WHERE UPC=?");
+  $priceQuery->bind_param("i", $upc);
+  $priceQuery->bind_result($itemPrice);
+  for ($i = 0; $i < count($inventoryItems); $i++)
+  {
+    $upc = $inventoryItems[$i];
+    $purchaseQuantity = $quantities[$i];
+    
+    $priceQuery->execute();
+    $priceQuery->fetch();
+    
+    $subTotalPrice = $itemPrice * (int)$purchaseQuantity; 
+    
+    $totalPrice += $subTotalPrice;
+    
+    // update inventory quantity
+    $q = "UPDATE $TABLE_Inventory SET quantity=quantity - $purchaseQuantity WHERE UPC = $upc";
+    $connection->query($q);
+    
+    $updateQuery = $connection->prepare("UPDATE $TABLE_Inventory SET quantity=? WHERE UPC=?");
+    $updateQuery->bind_param("ii", $purchaseQuantity, $upc);
+    $updateQuery->execute(); 
+    
+    
+    // commit inventorySale
+    $inventorySalesStmt = $connection->prepare("INSERT INTO $TABLE_InventorySales (quantity, price, inventoryUPC, saleId)
+    VALUES (?, ?, ?, ?)");
+    $inventorySalesStmt->bind_param("idii", $purchaseQuantity, $itemPrice, $upc, $insertedId);
+    $inventorySalesStmt->execute();
+  }
+  $q = "UPDATE $TABLE_Sales SET totalPrice = $totalPrice WHERE id = $insertedId";
+  $connection->query($q);
 	//}
-	/*else
+	else
 	{
 		for ($i = 0; $i < count($inventoryItems); $i++)
 		{
@@ -200,7 +218,53 @@ function createSale($firstNameCustomer, $lastNameCustomer, $phoneNumberCustomer,
 			$inventorySaleStmt->execute();
 		}
 	}
-	*/
+	return true;
+}*/
+function createSale($firstNameCustomer, $lastNameCustomer, $phoneNumberCustomer, $emailAddressCustomer, $employeeId, $inventoryItems, $quantities)
+{
+  global $TABLE_Sales, $TABLE_InventorySales, $TABLE_Inventory;
+  $connection = connect();
+  
+  $CreateSaleQuery = $connection->prepare("INSERT INTO $TABLE_Sales (firstNameCustomer, lastNameCustomer, phoneNumberCustomer, emailAddressCustomer, totalPrice, employeeId)
+  VALUES (?, ?, ?, ?, ?, ?)");
+  $CreateSaleQuery->bind_param("ssssdi", $firstNameCustomer, $lastNameCustomer, $phoneNumberCustomer, $emailAddressCustomer, $totalPrice, $employeeId);
+  $totalPrice = 0;
+  $CreateSaleQuery->execute();
+  
+  $InsertID = $connection->insert_id;
+  
+  $CreateInvSaleQuery = $connection->prepare("INSERT INTO $TABLE_InventorySales (quantity, price, inventoryUPC, saleId) VALUES
+  (?, ?, ?, ?)");
+  $CreateInvSaleQuery->bind_param("idii", $subQuantity, $subPrice, $subUPC, $InsertID);
+  
+  $PriceLookupQuery = $connection->prepare("SELECT price FROM $TABLE_Inventory WHERE UPC=?");
+  $PriceLookupQuery->bind_param("i", $subUPC);
+  
+  $InventoryUpdateQuery = $connection->prepare("UPDATE $TABLE_Inventory SET quantity=quantity-? WHERE UPC=?");
+  $InventoryUpdateQuery->bind_param("ii", $subQuantity, $subUPC);
+  
+  for($i = 0; $i < count($inventoryItems); $i++)
+  {
+    $subUPC = $inventoryItems[$i];
+    $subQuantity = $quantities[$i];
+    
+    $PriceLookupQuery->execute();
+    $PriceLookupResult = $PriceLookupQuery->get_result();
+    
+    $subPrice = $PriceLookupResult->fetch_assoc()["price"] * (int)$subQuantity;
+    
+    $CreateInvSaleQuery->execute();
+    
+    $InventoryUpdateQuery->execute();
+    
+    $totalPrice += $subPrice;
+  }
+  
+  $UpdateSaleQuery = $connection->prepare("UPDATE $TABLE_Sales SET totalPrice=? WHERE id=?");
+  $UpdateSaleQuery->bind_param("di", $totalPrice, $InsertID);
+  $UpdateSaleQuery->execute();
+  
+  return true;
 }
 
 //$firstName is the employee's first name
@@ -325,6 +389,9 @@ function getPriceAndName($upc)
   $priceAndName = array("price"=>$price, "name"=>$name);
 	return $priceAndName;
 }
+function validateEmployeePin($a, $b) { return true; }
+function validateEmployeePassword($a, $b) {return true;}
+
 
 function getInventory()
 {
