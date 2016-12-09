@@ -340,6 +340,7 @@ function deleteSale($id)
 
 function totalInventory()
 {
+<<<<<<< HEAD
 	global $TABLE_Inventory;
 	
 	$connection = connect();
@@ -348,6 +349,16 @@ function totalInventory()
 	$totalInvQuery->execute();
 	$totalInvResult = $totalInvQuery->get_result();
 	$totalInv = $totalResult->fetch_assoc()["totalInv"];
+=======
+  global $TABLE_Inventory;
+  
+  $connection = connect();
+  
+	$totalInvQuery = $connection->prepare("SELECT SUM(quantity) AS totalInv FROM $TABLE_Inventory"); 
+	$totalInvQuery->execute();
+	$totalInvResult = $totalInvQuery->get_result();
+	$totalInv = $totalInvResult->fetch_assoc()["totalInv"];
+>>>>>>> 3bdef13b83919dbebb6e976428154a3ce492083d
 	return $totalInv;
 }
 
