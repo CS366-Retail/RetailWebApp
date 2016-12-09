@@ -229,7 +229,7 @@ function getEmployees()
   $result = array();
   
   $connection = connect();
-  $sql = "SELECT * FROM $TABLE_Employees";
+  $sql = "SELECT * FROM $TABLE_Employees ORDER BY lastName";
   $queryResult = $connection->query($sql);
   while ($row = $queryResult->fetch_assoc())
     array_push($result, $row);
@@ -327,6 +327,14 @@ function validateEmployeePin($username, $pin)
 	}
 }
 
+function totalInventory()
+{
+	$totalInvQuery = $connection->prepare("SELECT SUM(quantity) AS totalInv FROM $TABLE_Inventory"); 
+	$totalInvQuery->execute();
+	$totalInvResult = $totalInvQuery->get_result();
+	$totalInv = $totalInvQuery->fetch_assoc()["totalInv"];
+	return $totalInv;
+}
 
 function getInventory()
 {
