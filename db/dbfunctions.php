@@ -329,10 +329,14 @@ function validateEmployeePin($username, $pin)
 
 function totalInventory()
 {
+  global $TABLE_Inventory;
+  
+  $connection = connect();
+  
 	$totalInvQuery = $connection->prepare("SELECT SUM(quantity) AS totalInv FROM $TABLE_Inventory"); 
 	$totalInvQuery->execute();
 	$totalInvResult = $totalInvQuery->get_result();
-	$totalInv = $totalInvQuery->fetch_assoc()["totalInv"];
+	$totalInv = $totalInvResult->fetch_assoc()["totalInv"];
 	return $totalInv;
 }
 

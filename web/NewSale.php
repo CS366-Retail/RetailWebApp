@@ -23,6 +23,8 @@
         var pendingPriceLookup = 0;
         var failedPriceLookup = 0;
         
+        document.getElementById("grandTotalPrice").innerHTML = "$0.00";
+        
         document.forms["employeeEntry"].reset();
         document.forms["customerForm"].reset();
         

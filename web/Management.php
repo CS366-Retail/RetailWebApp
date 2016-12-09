@@ -42,8 +42,21 @@
               });
               recalculateInventoryTable();
             },
-            400: function(data) {
-              alert("Error: 400");
+            401: function(data) {
+              alert("Error: 401");
+            }
+          }
+        });
+        
+        $.ajax("totalInventory.php", {
+          type: "POST",
+          statusCode: {
+            200: function(data) {
+              var count = parseInt(data.trim());
+              document.getElementById("manageInventory-itemcount").innerHTML = "Total inventory: " + count;
+            },
+            401: function(data) {
+              alert("Error: 401");
             }
           }
         });
@@ -229,6 +242,7 @@
             <table id="manageInventory-items_table">
               
             </table>
+            <div id="manageInventory-itemcount"></div>
           </div>
           <div id="manageInventory-addItem">
             <input id="manageInventory-addItem_Name" type="text" />
