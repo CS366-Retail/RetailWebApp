@@ -327,12 +327,27 @@ function validateEmployeePin($username, $pin)
 	}
 }
 
+function deleteSale($id)
+{
+	global $TABLE_Sales;
+	
+	$connection = connect();
+	
+	$idQuery = $connection->prepare("DELETE FROM $TABLE_Sales WHERE id = ?");
+	$idQuery->bind_param("i", $id);
+	$idQuery->execute();
+}
+
 function totalInventory()
 {
+	global $TABLE_Inventory;
+	
+	$connection = connect();
+	
 	$totalInvQuery = $connection->prepare("SELECT SUM(quantity) AS totalInv FROM $TABLE_Inventory"); 
 	$totalInvQuery->execute();
 	$totalInvResult = $totalInvQuery->get_result();
-	$totalInv = $totalInvQuery->fetch_assoc()["totalInv"];
+	$totalInv = $totalResult->fetch_assoc()["totalInv"];
 	return $totalInv;
 }
 
@@ -354,7 +369,7 @@ function getInventory()
 function getSales()
 {
   global $TABLE_Sales, $TABLE_Employees;
-  
+  deleteSale();
   $result = array();
   
   $connection = connect();
@@ -366,5 +381,6 @@ function getSales()
   while ($row = $queryResult->fetch_assoc())
     array_push($result, $row);
   
-  return $result;}
+  return $result;
+  }
 ?>

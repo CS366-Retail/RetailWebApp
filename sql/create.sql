@@ -57,7 +57,7 @@ CREATE TABLE RWA_InventorySales (
     couponId INT,
     PRIMARY KEY (inventoryUPC, saleId),
     FOREIGN KEY (inventoryUPC) REFERENCES RWA_Inventory(UPC),
-    FOREIGN KEY (saleId) REFERENCES RWA_Sales(id),
+    FOREIGN KEY (saleId) REFERENCES RWA_Sales(id) ON DELETE CASCADE,
     FOREIGN KEY (couponId) REFERENCES RWA_Coupons(id)
 );
 CREATE TABLE RWA_PercentDiscountCoupons (
