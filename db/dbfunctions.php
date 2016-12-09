@@ -11,7 +11,7 @@ $TABLE_Inventory="RWA_Inventory";
 $TABLE_InventorySales="RWA_InventorySales";
 $TABLE_PercentDiscountCoupons="RWA_PercentDiscountCoupons";
 $TABLE_Sales="RWA_Sales";
-/*
+
 function createPercentCoupon($couponCode, $expiration, $maxQuantity, $percentDiscount, $inventoryItems)
 {
 	global $TABLE_CouponApplicableItems;
@@ -31,14 +31,17 @@ function createPercentCoupon($couponCode, $expiration, $maxQuantity, $percentDis
 		$upc = $value;
 		$stmt2->execute();
 	}
-	$sql = "SELECT id FROM $TABLE_Coupons WHERE couponCode = $couponCode";
+	$idQuery = $connection->prepare("SELECT id FROM $TABLE_Coupons WHERE couponCode = $couponCode");
+	$idQuery->execute();
+	$idQueryResult = $idQuery->get_result();
 	$stmt3 = $connection->prepare("INSERT INTO $TABLE_PercentDiscountCoupons (id, percentDiscount)
 	VALUES (?, ?)");
 	$stmt3 = $connection->bind_param("ii", $id, $percentDiscount);
-	$id = $connection->query($sql);
+	$id = $idQueryResult->fetch_assoc()["id"];
 	$stmt3->execute();
+	
 }
-*//*
+
 function createBSGSCoupon($couponCode, $expiration, $maxQuantity, $qualifyingQuantity, $getQuantity, $pricePercentOfGetItems, $inventoryItems)
 {
 	global $TABLE_CouponApplicableItems;
@@ -58,25 +61,30 @@ function createBSGSCoupon($couponCode, $expiration, $maxQuantity, $qualifyingQua
 		$upc = $value;
 		$stmt2->execute();
 	}
-	$sql = "SELECT id FROM $TABLE_Coupons WHERE couponCode = $couponCode";
-	$stmt3 = $connection->prepare("INSERT INTO $TABLE_BuySomeGetSomeCoupons (id, qualifyingQuantity, getQuantity, pricePercentOfGetItems)
-	VALUES (?, ?, ?, ?)");
-	$stmt3 = $connection->bind_param("iiii", $id, $qualifyingQuantity, $getQuantity, $pricePercentOfGetItems);
-	$id = $connection->query($sql);
+	$idQuery = $connection->prepare("SELECT id FROM $TABLE_Coupons WHERE couponCode = $couponCode");
+	$idQuery->execute();
+	$idQueryResult = $idQuery->get_result();
+	$stmt3 = $connection->prepare("INSERT INTO $TABLE_PercentDiscountCoupons (id, percentDiscount)
+	VALUES (?, ?)");
+	$stmt3 = $connection->bind_param("ii", $id, $percentDiscount);
+	$id = $idQueryResult->fetch_assoc()["id"];
 	$stmt3->execute();
 	
-}*//*
+}
+
 function isValid($couponCode)
 {	
 	global $TABLE_Coupons;
 	
 	$connection = connect();
-	$sql = "SELECT expiration FROM $TABLE_Coupons WHERE couponCode = $couponCode";
-	$expiration = $connection->query($sql);
+	$expirationQuery = $connection->prepare("SELECT expiration FROM $TABLE_Coupons WHERE couponCode = $couponCode");
+	$expirationQuery->execute();
+	$expirationQueryResult = $expirationQuery->get_result();
+	$expiration = $expirationQueryResult->fetch_assoc()["expiration"];
 	$today = date("Y-m-d H:i:s");
 	return $expiration < $today;
 	
-}*/
+}
 
 function createInventoryItem($name, $price, $quantity, $couponApplicable=NULL)
 {
